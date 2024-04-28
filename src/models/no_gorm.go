@@ -21,3 +21,9 @@ type CreateUserResponse struct {
 		Id    int64  `json:"id,omitempty"`
 	} `json:"data,omitempty"`
 }
+
+type UserCtx struct {
+	UserId         int64 `json:"user_id,omitempty"`
+	TsEnroll       int64 `json:"ts_enroll,omitempty"`
+	TsInActivePool int64 `json:"ts_in_active_pool,omitempty"`
+}
