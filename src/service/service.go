@@ -7,7 +7,9 @@ import (
 
 	"github.com/hongminhcbg/waitingroom/config"
 	"github.com/hongminhcbg/waitingroom/src/models"
+	"github.com/hongminhcbg/waitingroom/src/set"
 	"github.com/hongminhcbg/waitingroom/src/store"
+	waitingqueue "github.com/hongminhcbg/waitingroom/src/waiting_queue"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-logr/logr"
@@ -15,8 +17,10 @@ import (
 )
 
 type Service struct {
-	store *store.UserStore
-	log   logr.Logger
+	store         *store.UserStore
+	log           logr.Logger
+	activeSession set.ISet
+	queue         waitingqueue.IWaitingQueue
 }
 
 func NewService(cfg *config.Config, store *store.UserStore, r *redis.Client, log logr.Logger) *Service {
