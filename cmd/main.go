@@ -21,8 +21,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var cfg *config.Config
-var logger logr.Logger
+var (
+	cfg    *config.Config
+	logger logr.Logger
+)
 
 func initDb() *gorm.DB {
 	db, err := gorm.Open(mysql.Open(cfg.MySqlUrl))
@@ -76,7 +78,8 @@ func main() {
 	}
 
 	logger = cfg.InitLog()
-	db := initDb()
+	// db := initDb()
+	db := &gorm.DB{}
 	redisClient := initRedis()
 	userStore := store.NewUseStore(db)
 	svc := service.NewService(cfg, userStore, redisClient, logger)
