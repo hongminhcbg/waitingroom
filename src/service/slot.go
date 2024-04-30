@@ -117,6 +117,7 @@ func (s *Service) SlotCheck(ctx *gin.Context) {
 	}
 
 	if err != nil {
+		s.log.Error(err, "redis down", "user_id", req.UserID)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -181,7 +182,7 @@ func (s *Service) SlotRelease(ctx *gin.Context) {
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(3)
 	go func(ctx context.Context, userId string) {
 		defer wg.Done()
 		err := s.queue.Zrem(ctx, userId)
@@ -189,6 +190,7 @@ func (s *Service) SlotRelease(ctx *gin.Context) {
 			s.log.Error(err, "remove user from queue error")
 		}
 	}(ctx.Request.Context(), req.UserID)
+
 	go func(ctx context.Context, userId string) {
 		defer wg.Done()
 		err := s.activeSession.Zrem(ctx, userId)
@@ -196,6 +198,15 @@ func (s *Service) SlotRelease(ctx *gin.Context) {
 			s.log.Error(err, "remove user from queue error")
 		}
 	}(ctx.Request.Context(), req.UserID)
+
+	go func(ctx context.Context, userId string) {
+		defer wg.Done()
+		err := s.redis.Del(ctx, fmt.Sprintf("user:%s", userId)).Err()
+		if err != nil {
+			s.log.Error(err, "remove user from queue error")
+		}
+	}(ctx.Request.Context(), req.UserID)
+
 	wg.Wait()
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
